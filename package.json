@@ -1,0 +1,24 @@
+{
+  "name": "weather-frontend-m2",
+  "version": "1.0.0",
+  "description": "Este es el primer MVP de una aplicación de clima desarrollada con HTML5 semántico, Bootstrap 5 y JavaScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aiespinazac-byte/weather-frontend-m2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aiespinazac-byte/weather-frontend-m2/issues"
+  },
+  "homepage": "https://github.com/aiespinazac-byte/weather-frontend-m2#readme",
+  "devDependencies": {
+    "sass": "^1.99.0"
+  }
+}

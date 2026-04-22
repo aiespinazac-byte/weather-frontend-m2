@@ -1,0 +1,28 @@
+@use "../base/variables" as *;
+
+
+weather-card {
+  border-radius: 10px;
+  box-shadow: $card-shadow;
+  transition: $transition-speed;
+  background-color: white;
+
+  // Elemento
+  &__temp {
+    font-size: 2rem;
+    font-weight: bold;
+    color: $primary-color;
+  }
+
+    &__status {
+    padding: 5px 10px;
+    border-radius: 20px;
+  }
+    &--hot {
+    border-top: 5px solid orange;
+  }
+   &:hover {
+    transform: translateY(-5px);
+    border-color: $primary-color;
+  }
+}
