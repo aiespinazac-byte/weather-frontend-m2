@@ -1,7 +1,10 @@
 @use "../base/variables" as *;
-
+@use "../base/mixins" as *;
 
 weather-card {
+  @include card-elevation();
+  padding: 20px;
+  border: 1px solid #ddd;
   border-radius: 10px;
   box-shadow: $card-shadow;
   transition: $transition-speed;
@@ -12,6 +15,12 @@ weather-card {
     font-size: 2rem;
     font-weight: bold;
     color: $primary-color;
+  }
+  
+  &__title{
+    font-size: 1.25rem;
+    font-weight:bold;
+      margin-bottom: 0.5rem;
   }
 
     &__status {
