@@ -1,0 +1,48 @@
+@use "../base/variables" as *;
+@use "../base/mixins" as *;
+
+.weather-card {
+  @include card-elevation();
+  padding: 25px;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  box-shadow: $card-shadow;
+  transition: $transition-speed;
+  background-color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &__temp {
+    font-size: 2rem;
+    font-weight: bold;
+    color: $primary-color;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  &__status {
+    padding: 6px 16px;
+    border-radius: 20px;
+    display: inline-block;
+    background-color: $background-color1;
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+
+  &--hot {
+    border-top: 5px solid orange;
+  }
+
+  &:hover {
+    border-color: $primary-color;
+  }
+}

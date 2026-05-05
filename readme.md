@@ -1,19 +1,26 @@
-# Weather Frontend MVP - Mi Región
+🌦️ App de Clima - Módulo 4 (Lógica y Estadísticas)
 
-Este es el primer MVP de una aplicación de clima desarrollada con HTML5 semántico, Bootstrap 5 y JavaScript.
+Este proyecto es una evolución del MVP inicial, ahora enfocado en la lógica de programación con JavaScript. La aplicación no solo muestra el clima, sino que procesa datos complejos para generar estadísticas semanales automáticamente.
 
-## 🚀 Temática
-Reporte meteorológico regional con diseño responsivo y navegación dinámica entre ciudades.
+🚀 TemáticaReporte meteorológico de 5 ciudades de Chile, con un sistema de navegación dinámica y visualización de pronóstico extendido de 7 días.
 
-## 🛠️ Tecnologías utilizadas
-* HTML5 Semántico
-* Bootstrap 5 (Grid, Cards, Navbar)
-* JavaScript (Manipulación del DOM)
-* Git & GitHub
+🧠 Objetivos Alcanzados (Módulo 4)
 
-## 📖 Cómo ejecutar el proyecto
-1. Descarga el archivo .zip o clona este repositorio.
-2. Abre el archivo `index.html` en cualquier navegador moderno.
+Modelado de Datos: Los datos pasaron de estar fijos en el HTML a ser un arreglo de objetos en JS, incluyendo un pronosticoSemanal anidado.
 
-## 🔗 Enlace al Repositorio
-https://github.com
+Cálculo de Estadísticas: Implementación de funciones que recorren los datos para obtener:Temperatura mínima y máxima de la semana.
+
+Promedio de temperatura semanal.Conteo de días según el estado del clima (Soleado, Nublado, Lluvia).
+
+Resumen Dinámico: Generación de mensajes automáticos basados en la lógica de los datos (ej: "Semana mayormente soleada").
+
+Manipulación del DOM: Renderizado dinámico de tarjetas de pronóstico y tablas de estadísticas sin escribir datos manuales en el HTML.
+
+🛠️ Tecnologías utilizadas
+
+HTML5 & Bootstrap 5: Estructura y diseño responsivo.
+SASS: Estilos modulares y avanzados.
+JavaScript (ES6+): Uso de .forEach(), .find(), .map(), localStorage y plantillas literales.
+Git & GitHub: Control de versiones y trabajo incremental.
+
+

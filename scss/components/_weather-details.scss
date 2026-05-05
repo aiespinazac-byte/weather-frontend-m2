@@ -1,0 +1,40 @@
+@use "../base/variables" as *;
+
+.weather-details {
+  padding: $padding1;
+  background-color:$background-color1;
+  border-radius: 10px;
+  box-shadow: $card-shadow;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+
+
+  &__city {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: $secondary-color;
+  }
+  
+
+  &__temp {
+    font-size: 2rem;
+    font-weight: bold;
+    color: $primary-color;
+    text-align: center;
+    margin: $margin1 0;
+  }
+
+  &__status {
+    display: inline-block;
+    padding: $padding2;
+    border-radius: $border-radius2;
+    background-color: $background-color1;
+    color: $color1;
+    font-size: 1.25rem;
+    font-weight: $font-weight2;
+    text-align: center;
+    margin-bottom: $margin-bottom1;
+  }
+}
