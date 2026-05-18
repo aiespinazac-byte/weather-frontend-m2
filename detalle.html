@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Detalle del clima</title>
 
-    <link href="css/main.css">
+    <link rel="stylesheet" href="css/main.css">
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -28,42 +28,19 @@
         <span class="weather-details__status" id="estado-detalle">--</span>
       </div>
 
-      <!-- <div class="container mt-5 text-center"> -->
+    <section class="container px-0 mt-4">
+     <div id ="estadisticas-semanales"></div> 
+    </section>
 
-      <!-- <a href="index.html" class="btn btn-secondary mt-3">volver al inicio</a>   -->
-      <!-- </div> -->
-
-      <div class="card shadow-sm p-4 mt-4 mx-auto" style="max-width: 500px">
-        <div class="card-body text-center">
-          <h5 class="card-title border-bottom pb-2">
-            Estadísticas de la semana
-          </h5>
-         
-            <p class="text-muted">Calculando datos...</p>
-          </div>
-        </div>
+    <section class="container mt-5 px-0">
+      <h2 class="text-center mb-4 font-weight-bold"> Pronostico Semanal</h2>
+      <div class="row g-3 justify-content-center" id="pronostico-lista">
       
-
-      <section class="container mt-4">
-        <div id="estadisticas-semanales"></div>
-      </section>
-
-      <section class="container mt-5">
-        <h2 class="text-center mb-4">Pronóstico Semanal</h2>
-        <div class="row g-3 justify-content-center" id="pronostico-lista">
-          <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-            <div class="card h-100 text-center shadow-sm">
-              <div class="card-header bg-light fw-bold">Lunes</div>
-              <div class="card-body">
-                <span class="fs-1">☀️</span>
-                <p class="card-text mb-0">24°C</p>
-                <small class="text-muted">Despejado</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
+    </section>
     </main>
+        
+  
     <footer class="bg-light py-4 mt-auto border-top">
       <div class="container text-center">
         <p>&copy; 2026 WeatherApp MVP - Proyecto M2</p>
