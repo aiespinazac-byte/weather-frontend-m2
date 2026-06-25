@@ -66,4 +66,4 @@ Al ser una arquitectura SPA distribuida globalmente por CDN, no requiere compila
    - **Contraseña:** `123`
 
 ## 🔗 Repositorio en GitHub
-- **Enlace al proyecto:** [https://github.com](https://github.com)
+- **Enlace al proyecto:** [https://github.com](https://github.com/aiespinazac-byte/weather-frontend-m2/commit/002495365f6d0a23baa857e6c9d829a7e0538373)
