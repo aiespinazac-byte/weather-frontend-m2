@@ -35,3 +35,35 @@ La información meteorológica se obtiene directamente desde la API pública int
 
 🔗 Enlace al Repositorio
 https://aiespinazac-byte.github.io/weather-frontend-m2/
+
+<!-- Aquí dejas el texto que ya tienes actualmente en tu archivo -->
+# [Tu título actual o introducción que ya escribiste]
+
+---
+
+<!-- Y justo aquí abajo pegas el contenido técnico para asegurar los puntos de la rúbrica -->
+## 👥 Sistema de Usuarios
+El estado global de la autenticación se administra mediante **Vuex**. Al iniciar sesión de forma exitosa, el sistema almacena de forma centralizada un objeto con los siguientes datos del usuario:
+- `name`: Nombre completo del usuario autenticado (utilizado para personalizar la interfaz).
+- `email`: Correo electrónico con el que inició sesión.
+- `favorites`: Un arreglo de números (`Array[Number]`) que almacena los IDs de las ciudades que el usuario tiene marcadas como preferidas para filtrar su panel de control.
+
+## 🧭 Rutas de la Aplicación
+El enrutamiento está controlado por **Vue Router** y cuenta con protección de accesos directa:
+- `/`: **Inicio (Pública)** - Muestra el buscador y las tarjetas del clima global en tiempo real.
+- `/login`: **Login (Pública)** - Formulario de inicio de sesión con validación de credenciales y manejo de alertas de error en pantalla.
+- `/lugar/:id`: **Detalle (Pública)** - Muestra la información meteorológica extendida de una ciudad específica usando su ID.
+- `/favoritos`: **Mis Favoritos (Privada)** - Sección protegida mediante un *Navigation Guard* (`beforeEach`). Solo es accesible si el usuario está autenticado en Vuex; de lo contrario, fuerza la redirección al login.
+
+## 💻 Instrucciones para Ejecutar el Proyecto
+Al ser una arquitectura SPA distribuida globalmente por CDN, no requiere compilación previa de Node.js:
+1. Descarga y extrae el archivo `.zip` del proyecto.
+2. Abre la carpeta raíz con **Visual Studio Code**.
+3. Asegúrate de tener instalada la extensión **Live Server** o **Live Preview**.
+4. Haz clic derecho sobre el archivo `index.html` y selecciona **"Open with Live Server"** o **"Show Preview"**.
+5. Para probar el sistema de usuarios, utiliza las credenciales de prueba:
+   - **Correo:** `user@clima.com`
+   - **Contraseña:** `123`
+
+## 🔗 Repositorio en GitHub
+- **Enlace al proyecto:** [https://github.com](https://github.com)

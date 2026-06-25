@@ -1,264 +1,389 @@
+// === 1. BASE DE LUGARES ===
+const lugaresBase = [
+  { id: 1, nombre: "Santiago", lat: -33.4489, lon: -70.6693 },
+  { id: 2, nombre: "Temuco", lat: -38.7359, lon: -72.5904 },
+  { id: 3, nombre: "Curicó", lat: -34.9855, lon: -71.2394 },
+  { id: 4, nombre: "Valparaíso", lat: -33.0472, lon: -71.6127 },
+  { id: 5, nombre: "Peñaflor", lat: -33.6062, lon: -70.8764 }
+];
+
+// === 2. CLIENTE API ===
 class ApiClient {
   constructor() {
-    this.urlBase = "https://api.open-meteo.com";
+    this.urlBase = "https://api.open-meteo.com/v1/forecast";
   }
 
-  /**
-   * 
-   * @param {number} lat 
-   * @param {number} lon 
-   * @returns {Promise<Object>} 
-   */
   async obtenerClima(lat, lon) {
     try {
-      const url =`${this.urlBase}/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Santiago`;
+       const url = `${this.urlBase}?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=America/Santiago`;
       const respuesta = await fetch(url);
-      
+
       if (!respuesta.ok) {
         throw new Error(`Error HTTP: ${respuesta.status}`);
       }
-      
-      const datos = await respuesta.json();
-      return datos;
+      return await respuesta.json();
     } catch (error) {
       console.error("Error al consumir la API de clima:", error);
-      throw error; 
+      throw error;
     }
   }
 
-  /**
-   * 
-   * @param {number} code 
-   * @returns {string} 
-   */
   mapearCodigoClima(code) {
     if (code === 0 || code === 1) return "Despejado";
     if (code === 2 || code === 3) return "Nublado";
     if (code >= 51 && code <= 67) return "Lluvia";
     if (code >= 80 && code <= 82) return "Lluvia";
-    return "Despejado"; 
+    return "Despejado";
   }
 }
 
+const api = new ApiClient();
 
+// === 3. ESTADO GLOBAL (Vuex) ===
+const store = Vuex.createStore({
+  state() {
+    return {
+      isAuthenticated: false,
+      user: null
+    };
+  },
+  mutations: {
+    SET_USER(state, payload) {
+      state.isAuthenticated = true;
+      state.user = payload;
+    },
+    CLEAR_USER(state) {
+      state.isAuthenticated = false;
+      state.user = null;
+    }
+  },
+  actions: {
+    loginUser({ commit }, credentials) {
+      const mockUser = { email: "user@clima.com", password: "123", name: "Juan Pérez" };
 
-class WeatherApp {
-  constructor(apiClient) {
-    this.apiClient = apiClient;
-    
-    this.lugares = [
-      { id: 1, nombre: "Santiago", lat: -33.4489, lon: -70.6693 },
-      { id: 2, nombre: "Temuco", lat: -38.7359, lon: -72.5904 },
-      { id: 3, nombre: "Curicó", lat: -34.9855, lon: -71.2394 },
-      { id: 4, nombre: "Valparaíso", lat: -33.0472, lon: -71.6127 },
-      { id: 5, nombre: "Peñaflor", lat: -33.6062, lon: -70.8764 }
-    ];
-  }
-
-  
-  async cargarLugares() {
-    const contenedor = document.getElementById("lista-ciudades");
-    if (!contenedor) return;
-
-    contenedor.innerHTML = `<div class="text-center w-100"><p class="fs-5 text-muted">Cargando estados del clima...</p></div>`;
-
-    try {
-      let htmlCards = "";
-      
-      
-      for (const lugar of this.lugares) {
-        const datosApi = await this.apiClient.obtenerClima(lugar.lat, lugar.lon);
-        const tempActual = Math.round(datosApi.current_weather.temperature);
-        const estadoActual = this.apiClient.mapearCodigoClima(datosApi.current_weather.weathercode);
-        
-        
-        const esCaluroso = tempActual >= 25 ? "weather-card--hot" : "";
-
-        htmlCards += `
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="weather-card ${esCaluroso}">
-              <div class="weather-card__body w-100">
-                <h5 class="weather-card__title">${lugar.nombre}</h5>
-                <p class="weather-card__temp">${tempActual}°C</p>
-                <span class="weather-card__status badge bg-primary mb-3">${estadoActual}</span>
-                <button class="btn btn-outline-dark w-100 mt-2" onclick="app.verDetalle(${lugar.id})">
-                  Ver detalle
-                </button>
-              </div>
-            </div>
-          </div>`;
+      if (credentials.email === mockUser.email && credentials.password === mockUser.password) {
+        commit('SET_USER', { 
+          name: mockUser.name, 
+          email: mockUser.email, 
+          favorites: [1, 4, 5] // IDs correspondientes a Santiago, Valparaíso y Peñaflor
+        });
+        return true;
       }
-      contenedor.innerHTML = htmlCards;
-    } catch (error) {
-      contenedor.innerHTML = `
-        <div class="alert alert-danger text-center w-100" role="alert">
-          Hubo un problema al conectar con el servicio meteorológico. Por favor, inténtelo de nuevo más tarde.
-        </div>`;
+      return false;
+    },
+    logoutUser({ commit }) {
+      commit('CLEAR_USER');
     }
   }
+});
 
-  
-  verDetalle(id) {
-    localStorage.setItem("ciudadSeleccionadaId", id);
-    window.location.href = "detalle.html";
-  }
+// === 4. COMPONENTE VISTA: HOME ===
+const Home = {
+  template: `
+    <div>
+      <h1 class="text-center mb-4">Estado del Clima</h1>
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+          <input
+            type="text"
+            v-model="busqueda"
+            class="form-control shadow-sm"
+            placeholder="🔍 Buscar una ciudad por nombre..."
+          />
+        </div>
+      </div>
 
-  
-  async cargarDetalleLugar() {
-    const titulo = document.getElementById("nombre-ciudad");
-    if (!titulo) return; 
+      <div v-if="cargando" class="text-center w-100">
+        <p class="fs-5 text-muted">Cargando estados del clima...</p>
+      </div>
 
-    const idGuardado = localStorage.getItem("ciudadSeleccionadaId");
-    const lugar = this.lugares.find(l => l.id == idGuardado);
+      <div v-if="error" class="alert alert-danger text-center w-100" role="alert">
+        {{ error }}
+      </div>
 
-    if (!lugar) {
-      titulo.innerText = "Lugar no encontrado";
-      return;
-    }
-
-    try {
-      const datosApi = await this.apiClient.obtenerClima(lugar.lat, lugar.lon);
-      
-      
-      const tempActual = Math.round(datosApi.current_weather.temperature);
-      const estadoActual = this.apiClient.mapearCodigoClima(datosApi.current_weather.weathercode);
-
-      
-      titulo.innerText = lugar.nombre;
-      document.getElementById("temp-detalle").innerText = `${tempActual}°C`;
-      document.getElementById("estado-detalle").innerText = estadoActual;
-
-      const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-      const pronosticoSemanal = datosApi.daily.time.map((fecha, index) => {
-        return {
-          dia: diasSemana[index] || "Próximo",
-          min: Math.round(datosApi.daily.temperature_2m_min[index]),
-          max: Math.round(datosApi.daily.temperature_2m_max[index]),
-          estado: this.apiClient.mapearCodigoClima(datosApi.daily.weathercode[index])
-        };
-      });
-
-    
-      const listaHTML = document.getElementById("pronostico-lista");
-      if (listaHTML) {
-        listaHTML.innerHTML = pronosticoSemanal.map(d => {
-          let icono = "☁️";
-          if (d.estado === "Despejado") icono = "☀️";
-          if (d.estado === "Lluvia") icono = "🌧️";
-
-          return `
-            <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-              <div class="card h-100 text-center shadow-sm">
-                <div class="card-header bg-light fw-bold py-2">${d.dia}</div>
-                <div class="card-body p-3">
-                  <span class="fs-1 d-block mb-2">${icono}</span> 
-                  <p class="card-text fw-bold mb-0 text-dark">${d.min}° | ${d.max}°</p>
-                  <small class="text-muted d-block mt-1">${d.estado}</small>
-                </div>
-              </div>
-            </div>`;
-        }).join("");
-      }
-
-     
-      const stats = this.calcularEstadisticas(pronosticoSemanal);
-      this.renderizarEstadisticasYAlertas(stats);
-
-    } catch (error) {
-      titulo.innerText = "Error";
-      document.getElementById("temp-detalle").innerText = "--";
-      document.getElementById("estado-detalle").innerText = "No se pudieron obtener los datos";
-      
-      const contenedorStats = document.getElementById("estadisticas-semanales");
-      if (contenedorStats) {
-        contenedorStats.innerHTML = `
-          <div class="alert alert-danger text-center" role="alert">
-            No se pudo procesar el pronóstico extendido.
-          </div>`;
-      }
-    }
-  }
-
-  
-  calcularEstadisticas(pronostico) {
-    let sumaMedias = 0;
-    let minSemanal = pronostico[0].min;
-    let maxSemanal = pronostico[0].max;
-    let conteoClima = { Despejado: 0, Nublado: 0, Lluvia: 0 };
-
-    pronostico.forEach(dia => {
-      sumaMedias += (dia.min + dia.max) / 2;
-      if (dia.min < minSemanal) minSemanal = dia.min;
-      if (dia.max > maxSemanal) maxSemanal = dia.max;
-      if (conteoClima[dia.estado] !== undefined) conteoClima[dia.estado]++;
-    });
-
-    const promedio = (sumaMedias / pronostico.length).toFixed(1);
-    
-    
-    let alertaClima = null;
-    if (promedio > 20) {
-      alertaClima = { tipo: "danger", mensaje: "⚠️ Alerta de Calor: El promedio semanal supera los 20°C. Mantente hidratado." };
-    } else if (conteoClima.Lluvia >= 2) {
-      alertaClima = { tipo: "warning", mensaje: "🌧️ Alerta por Lluvias: Se registran múltiples días con precipitaciones esta semana." };
-    } else {
-      alertaClima = { tipo: "success", mensaje: "✅ Clima Estable: No se registran condiciones extremas para esta semana." };
-    }
-
-    return { promedio, minSemanal, maxSemanal, conteoClima, alertaClima };
-  }
-
- 
-  renderizarEstadisticasYAlertas(stats) {
-    const contenedorStats = document.getElementById("estadisticas-semanales");
-    if (!contenedorStats) return;
-
-    contenedorStats.innerHTML = `
-      <div class="row g-4 mt-2">
-        <!-- Tarjeta de Métricas -->
-        <div class="col-12 col-md-6">
-          <div class="card p-4 shadow-sm h-100">
-            <h4 class="border-bottom pb-2 mb-3">Estadísticas de la semana</h4> 
-            <p class="fs-5"><strong>Mínima Extrema:</strong> ${stats.minSemanal}°C</p>
-            <p class="fs-5"><strong>Máxima Extrema:</strong> ${stats.maxSemanal}°C</p>
-            <p class="fs-5"><strong>Temperatura Promedio:</strong> ${stats.promedio}°C</p>
-            
-            <h5 class="mt-4">Frecuencia de climas:</h5>
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between align-items-center">☀️ Días Despejados <span class="badge bg-secondary rounded-pill">${stats.conteoClima.Despejado}</span></li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">☁️ Días Nublados <span class="badge bg-secondary rounded-pill">${stats.conteoClima.Nublado}</span></li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">🌧️ Días de Lluvia <span class="badge bg-secondary rounded-pill">${stats.conteoClima.Lluvia}</span></li>
-            </ul>
-          </div>
+      <div v-if="!cargando && !error" class="row g-4">
+        <div v-if="lugaresFiltrados.length === 0" class="text-center text-muted fs-5 my-4">
+          ❌ No se encontró el lugar "{{ busqueda }}"
         </div>
 
-        <!-- REQUISITO: Nueva sección "Alertas de clima" en el detalle -->
-        <div class="col-12 col-md-6">
-          <div class="card p-4 shadow-sm h-100 d-flex flex-column justify-content-between">
-            <div>
-              <h4 class="border-bottom pb-2 mb-3">Alertas de Clima</h4>
-              <p class="text-muted">Análisis automático basado en los umbrales meteorológicos de la semana en curso:</p>
-              <div class="alert alert-${stats.alertaClima.tipo} fw-bold mt-3" role="alert">
-                ${stats.alertaClima.mensaje}
-              </div>
-            </div>
-            <div class="text-center mt-4">
-              <a href="index.html" class="btn btn-dark px-4">Volver al Inicio</a>
+        <div v-for="lugar in lugaresFiltrados" :key="lugar.id" class="col-12 col-md-6 col-lg-4">
+          <div class="weather-card p-4 bg-white rounded shadow-sm" :class="{'weather-card--hot': lugar.tempActual >= 25}">
+            <div class="weather-card__body w-100 text-center">
+              <h5 class="weather-card__title">{{ lugar.nombre }}</h5>
+              <p class="weather-card__temp fs-2 fw-bold text-primary">{{ lugar.tempActual }}°C</p>
+              <span class="weather-card__status badge bg-primary mb-3">{{ lugar.estadoActual }}</span>
+             
+              <router-link :to="'/lugar/' + lugar.id" class="btn btn-outline-dark w-100 mt-2">
+                Ver Detalle
+              </router-link>
             </div>
           </div>
         </div>
       </div>
-    `;
+    </div>
+  `,
+  data() {
+    return {
+      busqueda: "",
+      lugares: [],
+      cargando: true,
+      error: null,
+    };
+  },
+  computed: {
+    lugaresFiltrados() {
+      return this.lugares.filter((lugar) =>
+        lugar.nombre.toLowerCase().includes(this.busqueda.toLowerCase())
+      );
+    },
+  },
+  async mounted() {
+    try {
+      const listaPromesas = lugaresBase.map(async (lugar) => {
+        const datosApi = await api.obtenerClima(lugar.lat, lugar.lon);
+        return {
+          ...lugar,
+          tempActual: Math.round(datosApi.current_weather.temperature),
+          estadoActual: api.mapearCodigoClima(
+            datosApi.current_weather.weathercode,
+          ),
+        };
+      });
+      this.lugares = await Promise.all(listaPromesas);
+    } catch (error) {
+      this.error =
+        "Error al cargar los datos del clima. Por favor, intenta nuevamente.";
+    } finally {
+      this.cargando = false;
+    }
+  },
+};
+
+// === 5. COMPONENTE VISTA: DETALLE ===
+const Detalle = {
+  props: ["id"],
+  template: `
+    <div>
+      <div v-if="cargando" class="text-center m-5">
+        <p class="fs-5 text-muted">Cargando detalles del clima...</p>
+      </div>
+
+      <div v-if="error" class="alert alert-danger text-center m-5" role="alert">
+        {{ error }}
+        <div class="mt-3">
+          <router-link to="/" class="btn btn-dark">← Volver al Inicio</router-link>
+        </div>
+      </div>
+
+      <div v-if="!cargando && !error">
+        <div class="mb-3">
+          <router-link to="/" class="btn btn-secondary btn-sm">← Volver</router-link>
+        </div>
+
+        <div class="weather-details shadow-sm mb-4 p-4 bg-white rounded text-center">
+          <h1 class="weather-details__city text-dark fs-2 mb-2">{{ infoLugar.nombre }}</h1>
+          <p class="weather-details__temp mb-2 fs-1 fw-bold">{{ tempActual }}°C</p>
+          <span class="weather-details__status badge bg-info px-3 py-2 text-wrap text-dark">{{ estadoActual }}</span>
+        </div>
+      </div>
+    </div>
+  `,
+  data() {
+    return {
+      cargando: true,
+      error: null,
+      infoLugar: null,
+      tempActual: "--",
+      estadoActual: "--"
+    };
+  },
+  async mounted() {
+    const lugarId = parseInt(this.id);
+    this.infoLugar = lugaresBase.find((l) => l.id === lugarId);
+
+    if (!this.infoLugar) {
+      this.error = "Lugar no encontrado";
+      this.cargando = false;
+      return;
+    }
+
+    try {
+      const datosApi = await api.obtenerClima(
+        this.infoLugar.lat,
+        this.infoLugar.lon,
+      );
+
+      this.tempActual = Math.round(datosApi.current_weather.temperature);
+      this.estadoActual = api.mapearCodigoClima(
+        datosApi.current_weather.weathercode,
+      );
+    } catch (err) {
+      this.error =
+        "No se pudieron obtener los datos o procesar el pronóstico extendido.";
+    } finally {
+      this.cargando = false;
+    }
   }
-}
+};
 
+// === 6. COMPONENTE VISTA: LOGIN ===
+const Login = {
+  template: `
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+      <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
+        <h3 class="text-center mb-4">Iniciar Sesión</h3>
+        <form @submit.prevent="handleLogin">
+          <div class="mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" v-model="email" placeholder="user@clima.com" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" v-model="password" placeholder="123" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+        </form>
+        <div v-if="errorMessage" class="alert alert-danger mt-3 py-2 text-center" role="alert">
+          {{ errorMessage }}
+        </div>
+      </div>
+    </div>
+  `,
+  data() {
+    return {
+      email: '',
+      password: '',
+      errorMessage: ''
+    };
+  },
+  methods: {
+    async handleLogin() {
+      this.errorMessage = '';
+      const success = await this.$store.dispatch('loginUser', { email: this.email, password: this.password });
+      
+      if (success) {
+        this.$router.push('/'); 
+      } else {
+        this.errorMessage = 'Usuario o contraseña incorrectos'; 
+      }
+    }
+  }
+};
 
-const client = new ApiClient();
-const app = new WeatherApp(client);
-const verDetalle = (id) => app.verDetalle(id);
+// === 7. COMPONENTE VISTA: FAVORITOS (Sección Protegida) ===
+const Favoritos = {
+  template: `
+    <div class="container">
+      <div class="card p-4 shadow-sm">
+        <h3 class="mb-4">⭐ Mis Lugares Favoritos</h3>
+        <p class="text-muted">Sección personalizada. Datos leídos dinámicamente desde el estado global de Vuex.</p>
+        <div v-if="lugaresFavoritos.length === 0" class="text-muted">No tienes ciudades favoritas asignadas.</div>
+        <ul class="list-group" v-else>
+          <li v-for="lugar in lugaresFavoritos" :key="lugar.id" class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>{{ lugar.nombre }}</strong>
+            <router-link :to="'/lugar/' + lugar.id" class="btn btn-sm btn-primary">Ver clima</router-link>
+          </li>
+        </ul>
+      </div>
+    </div>
+  `,
+  computed: {
+    lugaresFavoritos() {
+      const user = this.$store.state.user;
+      if (!user || !user.favorites) return [];
+      // CORREGIDO: lugaresBase con 'l' minúscula para evitar errores de consola
+      return lugaresBase.filter(l => user.favorites.includes(l.id));
+    }
+  }
+};
 
+// === 8. CONFIGURACIÓN DE VUE ROUTER ===
+const routes = [
+  { path: '/', component: Home },
+  { path: '/login', component: Login },
+  { path: '/lugar/:id', component: Detalle, props: true },
+  { path: '/favoritos', component: Favoritos, meta: { requiresAuth: true } }
+];
 
-document.addEventListener("DOMContentLoaded", () => {
-  app.cargarLugares();
-  app.cargarDetalleLugar();
+const router = VueRouter.createRouter({
+  history: VueRouter.createWebHashHistory(),
+  routes
 });
+
+router.beforeEach((to, from, next) => {
+  const isAuth = store.state.isAuthenticated;
+  if (to.meta.requiresAuth && !isAuth) {
+    next('/login'); 
+  } else {
+    next();
+  }
+});
+
+const App = {
+  template: `
+    <div class="d-flex flex-column min-vh-100 bg-light">
+      <header>
+        <!-- Navbar Adaptable con Bootstrap -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+          <div class="container">
+            <router-link class="navbar-brand fw-bold" to="/">🌤️ MundoClima</router-link>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+              <ul class="navbar-nav align-items-center">
+                <li class="nav-item">
+                  <router-link class="nav-link" to="/">Inicio</router-link>
+                </li>
+                <li class="nav-item" v-if="isAuthenticated">
+                  <router-link class="nav-link" to="/favoritos">Mis Favoritos</router-link>
+                </li>
+                
+                <!-- Elementos condicionales basados en el Estado Autenticado (Vuex) -->
+                <li class="nav-item ms-lg-3" v-if="!isAuthenticated">
+                  <router-link class="btn btn-outline-light btn-sm" to="/login">Iniciar Sesión</router-link>
+                </li>
+                <li class="nav-item ms-lg-3 d-flex align-items-center gap-2" v-else>
+                  <span class="text-light small">Bienvenido, <strong>{{ currentUser.name }}</strong></span>
+                  <button class="btn btn-danger btn-sm" @click="logout">Cerrar Sesión</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <!-- Inyección Dinámica de Vistas -->
+      <main class="container my-5">
+        <router-view></router-view>
+      </main>
+
+      <footer class="bg-light py-4 mt-auto border-top">
+        <div class="container text-center">
+          <p>&copy; 2026 WeatherApp SPA - Proyecto Vue.js</p>
+        </div>
+      </footer>
+    </div>
+  `,
+  computed: {
+    isAuthenticated() {
+      return this.$store.state.isAuthenticated;
+    },
+    currentUser() {
+      return this.$store.state.user;
+    }
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logoutUser');
+      this.$router.push('/login');
+    }
+  }
+};
+
+// === 10. ENRUTADO, STORE Y MONTAJE FINAL ===
+const app = Vue.createApp(App);
+app.use(store);
+app.use(router);
+app.mount('#app');
